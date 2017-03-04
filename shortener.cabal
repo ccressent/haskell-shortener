@@ -1,7 +1,7 @@
 name:                shortener
 version:             0.1.0.0
--- synopsis:
--- description:
+synopsis:            A simple URL shortening service
+description:         Please see README.md
 homepage:            https://github.com/ccressent/shortener#readme
 license:             BSD3
 license-file:        LICENSE
