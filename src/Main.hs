@@ -19,6 +19,17 @@ alphanum = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']
 
 main :: IO ()
 main = scotty 3000 $ do
+    get "/" $ do
+        url    <- param "url"
+        key    <- fmap TL.pack $ liftAndCatchIO $ random 16 alphanum
+        conn   <- liftAndCatchIO $ redisConn
+        result <- liftAndCatchIO $ R.runRedis conn $ R.set (TE.encodeUtf8 (TL.toStrict key)) url
+
+        case result of
+          Left reply   -> text $ TL.pack $ show reply
+          Right R.Ok   -> text $ "Your shortened URL: http://localhost:3000/" <> key
+          Right status -> text $ "Unexpected error: " <> TL.pack (show status)
+
     get "/:key" $ do
         key    <- param "key"
         conn   <- liftAndCatchIO $ redisConn
@@ -28,11 +39,6 @@ main = scotty 3000 $ do
           Left reply       -> text $ TL.pack $ show reply
           Right (Just url) -> text $ TL.fromStrict $ TE.decodeUtf8 url
           Right Nothing    -> text $ "key " <> TL.fromStrict (TE.decodeUtf8 key) <> " not found"
-
-    get "/generate/:url" $ do
-        url <- param "url"
-        key <- fmap TL.pack $ liftAndCatchIO $ random 16 alphanum
-        text $ "Storing " <> url <> " in key " <> key
 
 random :: Int -> [a] -> IO [a]
 random n xs = replicateM n (randomElement xs)
