@@ -22,10 +22,10 @@ main = scotty 3000 $ do
         key <- fmap TL.pack $ liftAndCatchIO $ random 16 alphanum
         text $ "Storing " <> url <> " in key " <> key
 
-random :: Int -> String -> IO String
+random :: Int -> [a] -> IO [a]
 random n xs = replicateM n (randomElement xs)
 
-randomElement :: String -> IO Char
+randomElement :: [a] -> IO a
 randomElement xs = do
     let maxIndex = length xs - 1
     index <- SR.randomRIO (0, maxIndex)
