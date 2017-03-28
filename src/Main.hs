@@ -3,12 +3,12 @@ module Main where
 
 import Control.Monad (replicateM)
 import Data.Monoid
+import Data.Text.Encoding (encodeUtf8, decodeUtf8)
 
 import qualified Database.Redis as R
 import Web.Scotty
 
 import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Encoding as TE
 import qualified System.Random as SR
 
 redisConfig = R.defaultConnectInfo
@@ -23,7 +23,7 @@ main = scotty 3000 $ do
         url    <- param "url"
         key    <- fmap TL.pack $ liftAndCatchIO $ random 16 alphanum
         conn   <- liftAndCatchIO $ redisConn
-        result <- liftAndCatchIO $ R.runRedis conn $ R.set (TE.encodeUtf8 (TL.toStrict key)) url
+        result <- liftAndCatchIO $ R.runRedis conn $ R.set (encodeUtf8 (TL.toStrict key)) url
 
         case result of
           Left reply   -> text $ TL.pack $ show reply
@@ -37,8 +37,8 @@ main = scotty 3000 $ do
 
         case result of
           Left reply       -> text $ TL.pack $ show reply
-          Right (Just url) -> text $ TL.fromStrict $ TE.decodeUtf8 url
-          Right Nothing    -> text $ "key " <> TL.fromStrict (TE.decodeUtf8 key) <> " not found"
+          Right (Just url) -> text $ TL.fromStrict $ decodeUtf8 url
+          Right Nothing    -> text $ "key " <> TL.fromStrict (decodeUtf8 key) <> " not found"
 
 random :: Int -> [a] -> IO [a]
 random n xs = replicateM n (randomElement xs)
