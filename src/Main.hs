@@ -11,18 +11,19 @@ import Web.Scotty
 import qualified Data.Text.Lazy as TL
 import qualified System.Random as SR
 
-redisConfig = R.defaultConnectInfo
-redisConn   = R.checkedConnect redisConfig
-
 alphanum :: String
 alphanum = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']
 
 main :: IO ()
-main = scotty 3000 $ do
+main = do
+  redisConn <- R.checkedConnect R.defaultConnectInfo
+  scotty 3000 $ shortener redisConn
+
+shortener :: R.Connection -> ScottyM ()
+shortener conn = do
     get "/" $ do
         url    <- param "url"
         key    <- fmap TL.pack $ liftAndCatchIO $ random 16 alphanum
-        conn   <- liftAndCatchIO $ redisConn
         result <- liftAndCatchIO $ R.runRedis conn $ R.set (encodeUtf8 (TL.toStrict key)) url
 
         case result of
@@ -32,7 +33,6 @@ main = scotty 3000 $ do
 
     get "/:key" $ do
         key    <- param "key"
-        conn   <- liftAndCatchIO $ redisConn
         result <- liftAndCatchIO $ R.runRedis conn $ R.get key
 
         case result of
