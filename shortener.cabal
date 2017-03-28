@@ -2,7 +2,7 @@ name:                shortener
 version:             0.1.0.0
 synopsis:            A simple URL shortening service
 description:         Please see README.md
-homepage:            https://github.com/ccressent/shortener#readme
+homepage:            https://github.com/ccressent/haskell-shortener#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Cyril Cressent
